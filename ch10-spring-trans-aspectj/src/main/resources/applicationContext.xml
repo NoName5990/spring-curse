@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:property-placeholder location="jdbc.properties"/>
+    <bean id="myDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="${jdbc.max}"/>
+    </bean>
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="myDataSource"/>
+        <property name="configLocation" value="classpath:mybatis.xml"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.imust.dao"/>
+    </bean>
+    <bean id="buyService" class="com.imust.service.impl.BuyGoodsServiceImpl">
+        <property name="goodsDao" ref="goodsDao"/>
+        <property name="saleDao" ref="saleDao"/>
+     </bean>
+    <!--
+        记住所有的xml文件都是模板，用的时候直接拷贝过去修改就行，不用去记，能知道干啥的就行
+
+        声明式事务处理：和源代码完全分离
+            1、声明事务管理器对象
+                指定数据源
+            2、添加事务驱动
+                声明业务方法它的事务属性（隔离级别，传播行为，超过时间）
+                id:自定义名称，表示tx：advice标签之间的配置内容的
+                transaction-manager：事务管理器对象的id
+                <tx:attributes>:表示配置事务的属性
+                    <tx:method name=""/>：表示给具体的方法配置属性，method可以有多个，分别给不同的方法设置事务属性
+                        name方法的名称：
+                            1）完整的方法名，不带包和类
+                            2）方法可以使用通配符，*表示任意字符（大项目中方法多时用）
+                                <tx:method name="add*" propagation="REQUIRES_NEW" ..."/>：表示以add开头的方法，并且每次都需要
+                                一个新事务
+                                <tx:method name="modify*" propagation="REQUIRES_NEW" ..."/>：以modify开头的...
+                                <tx:method name="*", propagation="SUPPORTS" read-only="true"/>：表示几乎可以遇见的所有方法，
+                                是可以有也可以没有事务的，后边没有进行配置的都是按照默认的方法来的
+                        propagation：传播行为，枚举值
+                        isolation:隔离级别
+                        rollback-for：你指定的异常类名，全限定类名。发生异常，一定回滚
+            3、配置aop
+                配置切入点表达式：指定哪些包中类，要使用事务
+                    id:切入点表达式的名称，唯一值
+                    expression：切入点表达式，指定哪些类要使用事务，aspectj会创建代理对象
+                如：存在：com.imust.service,con.crm.service,com.service三个包
+                    execution(* *..service..*.*(..)):表示所有service的包和包中的所有类中的所有方法
+                配置增强器：关联advice和pointcut
+                    advice-ref：通知，上面tx：advice的配置
+                    pointcut-ref:切入点表达式的id
+
+                    <aop:advisor advice-ref="myAdvice" pointcut-ref="servicePt"/>
+
+    -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="myDataSource"/>
+    </bean>
+    <tx:advice id="myAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="buy" propagation="REQUIRED" isolation="DEFAULT"
+                       rollback-for="java.lang.NullPointerException,
+                       com.imust.excep.NotEnoughException"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut id="servicePt" expression="execution(* *..service..*.*(..))"/>
+        <aop:advisor advice-ref="myAdvice" pointcut-ref="servicePt"/>
+    </aop:config>
+
+</beans>

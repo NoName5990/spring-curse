@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--告诉spring创建对象
+        声明bean，就是告诉spring要创建某个类的对象
+        id：对象的自定义名称，唯一值。spring通过这个名称找到对象
+        class：类的全限定名称（不能是接口，因为spring是反射机制，必须使用类）
+
+
+        spring就完成SomeService someService = new SomeServiceImpl（）；的创建
+        spring就是把创建好的对象放入到map中，spring框架有一个map存放对象的
+            springMap.put（id的值，对象）；
+            例如：springMap.put("someService",new SomeServiceImpl());
+                这样就可以通过id（key）来拿到对应的对象（value)了
+
+        一个bean标签就声明一个java对象
+    -->
+    <bean id="someService" class="com.imust.service.impl.SomeServiceImpl"/>
+    <!--对象在执行bean语句的时候就已经创建了-->
+    <bean id="someService1" class="com.imust.service.impl.SomeServiceImpl"/>
+
+    <!--
+        spring能创建一个非自定义的对象吗？创建一个存在的某个类的对象。
+            当然可以，只要声明就可以创建
+    -->
+    <bean id="mydate" class="java.util.Date"/>
+
+</beans>
+<!--
+    spring配置文件
+        1、beans：是根标签，spring把java对象成为bean
+            一个对象一个bean
+        2、spring-beans.xsd是约束文件，和mybatis指定dtd一样的
+
+-->

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>com.imust.controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/reg</url-pattern>
+    </servlet-mapping>
+    <!--注册监听器ContextLoadListener
+        被创建对象后，会读取/WEB-INF/applicationContext.xml
+        为什么要读取文件：因为在监听器中要创建ApplicationContext对象，需要加载配置文件
+        /WEB-INF/applicationContext.xml就是监听器默认读取的spring配置文件的路径（名称和路径都是固定的）
+        可以修改默认的文件位置，使用context-param重新指定文件的位置
+        <context-param>
+            contextConfigLocation:表示配置文件路径
+            value中填入自定义配置文件的路径
+
+        配置监听器：目的是创建容器对象，创建了容器对象，就能把spring.xml文件中所有的对象都创建好。
+        用户发送请求就可以直接使用对象了。
+
+    -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!--这块最主要的是学会这个监听器的创建就行了，就是那么俩个标签，找配置文件，声明监听器-->
+</web-app>
+<!--
+    更改版本小技巧
+        1、打开框架
+        2、点击模块下的web
+        3、点击右侧减号
+        4、点击右侧加号，名字可以随便写但不要是web.xml
+        5、回到编辑页面重命名为web.xml
+-->
